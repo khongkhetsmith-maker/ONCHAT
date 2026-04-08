@@ -1,336 +1,176 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <title>ONCHAT — Emoji Avatars + Dark Mode + Timestamps</title>
+<meta charset="utf-8">
+<title>ONCHAT CLEAN</title>
 
-  <!-- Use the local uploaded image as favicon (developer-supplied path) -->
-  <link rel="icon" type="image/png" href="file:///mnt/data/8e324796-6358-4cbf-a75b-e5be801196f1.png">
+<style>
+body { font-family: Arial; background:#0f1115; color:white; text-align:center; }
 
-  <style>
-    :root{
-      --bg: #EFDECD;
-      --panel: #fff;
-      --text: #111;
-      --accent: #ffd400;
-      --bubble1: #c8ffd1;
-      --bubble2: #d0ddff;
-      --input-bg: #fff;
-    }
+.chat {
+  height:400px;
+  overflow:auto;
+  border:3px solid orange;
+  padding:10px;
+  margin:10px auto;
+  width:90%;
+  max-width:500px;
+  border-radius:12px;
+}
 
-    body.dark{
-      --bg: #0f1115;
-      --panel: #0b0c0f;
-      --text: #e6e7ea;
-      --accent: #ffb84d;
-      --bubble1: #1f3a2d;
-      --bubble2: #223244;
-      --input-bg: #121215;
-    }
+.msg {
+  margin:6px;
+  padding:8px;
+  border-radius:10px;
+  max-width:70%;
+}
 
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      padding:30px;
-      font-family: Inter, "Segoe UI", Arial, sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      display:flex;
-      align-items:flex-start;
-      justify-content:center;
-      min-height:100vh;
-    }
+.left {
+  background:#1f3a2d;
+  text-align:left;
+  margin-right:auto;
+}
 
-    .container{
-      width:440px;
-      max-width:95vw;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:12px;
-    }
+.right {
+  background:#223244;
+  text-align:right;
+  margin-left:auto;
+}
 
-    header{
-      width:100%;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      position:relative;
-    }
+.dm {
+  border:2px solid orange;
+}
 
-    h1{
-      margin:0;
-      font-size:28px;
-      letter-spacing:1px;
-    }
+input, select, button {
+  padding:8px;
+  border-radius:8px;
+  border:none;
+  margin:4px;
+}
 
-    .toggle {
-      position:absolute;
-      right:0;
-      top: -6px;
-      background:var(--panel);
-      border:2px solid var(--accent);
-      padding:6px 8px;
-      border-radius:999px;
-      cursor:pointer;
-      color:var(--text);
-      font-weight:600;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    .chat-box{
-      width:100%;
-      height:420px;
-      background:var(--panel);
-      border-radius:14px;
-      border:4px solid var(--accent);
-      padding:14px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      overflow:auto;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    }
-
-    .row{
-      display:flex;
-      align-items:flex-end;
-      gap:8px;
-      width:100%;
-    }
-
-    .row.left{ justify-content:flex-start; }
-    .row.right{ justify-content:flex-end; }
-
-    .avatar{
-      width:36px;height:36px;border-radius:50%;
-      display:inline-flex; align-items:center; justify-content:center;
-      font-size:18px; flex:0 0 36px;
-      background:transparent;
-    }
-
-    .bubble{
-      padding:10px 14px;
-      border-radius:16px;
-      max-width:72%;
-      word-break:break-word;
-      font-size:15px;
-      line-height:1.3;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.04);
-      position:relative;
-    }
-
-    .user1.bubble{
-      background:var(--bubble1);
-      color:var(--text);
-      border-top-left-radius:4px;
-      text-align:left;
-    }
-
-    .user2.bubble{
-      background:var(--bubble2);
-      color:var(--text);
-      border-top-right-radius:4px;
-      text-align:left;
-    }
-
-    /* timestamp (small, subtle) */
-    .ts {
-      display:block;
-      font-size:11px;
-      margin-top:6px;
-      opacity:0.7;
-    }
-
-    .input-row{
-      width:100%;
-      display:flex;
-      gap:8px;
-      align-items:center;
-      justify-content:center;
-    }
-
-    select, input[type="text"]{
-      padding:10px 12px;
-      border-radius:10px;
-      border:1px solid rgba(0,0,0,0.08);
-      background:var(--input-bg);
-      color:var(--text);
-      font-size:14px;
-      outline:none;
-    }
-
-    select{ width:160px; }
-    input[type="text"]{ flex:1; min-width:0; }
-
-    button.send{
-      background:var(--accent);
-      padding:10px 14px;
-      border-radius:10px;
-      border: none;
-      cursor:pointer;
-      font-weight:700;
-      color:#111;
-    }
-
-    .meta{ font-size:12px; opacity:0.8; margin-top:4px; text-align:center; }
-
-    @media (max-width:520px){
-      .chat-box{ height:64vh; }
-    }
-  </style>
+button {
+  background:orange;
+  font-weight:bold;
+  cursor:pointer;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="container">
-    <header>
-      <h1>ONCHAT</h1>
-      <button id="dmToggle" class="toggle">🌙 Dark</button>
-    </header>
+<h2>ONCHAT 🌍 CLEAN</h2>
 
-    <div id="chatBox" class="chat-box" aria-live="polite"></div>
+<!-- ROOM -->
+<select id="room">
+  <option value="general">🌍 General</option>
+  <option value="games">🎮 Games</option>
+  <option value="random">🎲 Random</option>
+</select>
 
-    <div class="input-row">
-      <select id="username">
-        <option value="user1">User 1 (Green)</option>
-        <option value="user2">User 2 (Blue)</option>
-      </select>
+<br>
 
-      <input id="messageInput" type="text" placeholder="Type your message... 😺🔥" autocomplete="off" />
+<!-- USER -->
+<input id="username" placeholder="Enter your name 😎">
 
-      <button class="send" id="sendBtn">Send</button>
-    </div>
+<!-- DM -->
+<input id="toUser" placeholder="Send to (DM)">
 
-    <div class="meta">Emoji avatars • Live update • Messages are saved on server</div>
-  </div>
+<div id="chat" class="chat"></div>
+
+<input id="msg" placeholder="type message...">
+
+<button onclick="send()">Send</button>
+<button onclick="clearChat()">🧹 Clear Room</button>
 
 <script>
-  const API = "http://127.0.0.1:8000";
-  const chatBox = document.getElementById('chatBox');
-  const usernameEl = document.getElementById('username');
-  const input = document.getElementById('messageInput');
-  const sendBtn = document.getElementById('sendBtn');
-  const dmToggle = document.getElementById('dmToggle');
+const API = "https://onchat-peo0.onrender.com";
 
-  const AVATARS = { user1: "🐹", user2: "🦊" };
+const chat = document.getElementById("chat");
+const msg = document.getElementById("msg");
+const room = document.getElementById("room");
+const usernameEl = document.getElementById("username");
+const toUser = document.getElementById("toUser");
 
-  // Dark mode from localStorage
-  function applyDarkModeFromStorage(){
-    const want = localStorage.getItem('onchat_dark');
-    if(want === "1"){
-      document.body.classList.add('dark');
-      dmToggle.textContent = "☀️ Light";
-    } else {
-      document.body.classList.remove('dark');
-      dmToggle.textContent = "🌙 Dark";
-    }
-  }
-  applyDarkModeFromStorage();
-  dmToggle.addEventListener('click', () => {
-    const isDark = document.body.classList.toggle('dark');
-    localStorage.setItem('onchat_dark', isDark ? "1" : "0");
-    dmToggle.textContent = isDark ? "☀️ Light" : "🌙 Dark";
+// save username
+usernameEl.value = localStorage.getItem("name") || "";
+usernameEl.addEventListener("input", ()=>{
+  localStorage.setItem("name", usernameEl.value);
+});
+
+// avatar
+function getAvatar(name){
+  const emojis = ["🐹","🦊","🐸","🐼","🐵","🐯","🦁","🐙"];
+  let sum=0;
+  for(let i=0;i<name.length;i++) sum+=name.charCodeAt(i);
+  return emojis[sum%emojis.length];
+}
+
+// time
+function timeAgo(ms){
+  const s=Math.floor((Date.now()-ms)/1000);
+  if(s<60) return s+"s";
+  const m=Math.floor(s/60);
+  if(m<60) return m+"m";
+  const h=Math.floor(m/60);
+  return h+"h";
+}
+
+// load
+async function load(){
+  const user = usernameEl.value.trim();
+  const res = await fetch(`${API}/chat?room=${room.value}&user=${encodeURIComponent(user)}`);
+  const data = await res.json();
+
+  chat.innerHTML="";
+
+  data.forEach(m=>{
+    const div=document.createElement("div");
+
+    div.className="msg "+(m.user===user?"right":"left");
+
+    if(m.to) div.classList.add("dm");
+
+    div.innerHTML=`
+      ${getAvatar(m.user)} <b>${m.user}</b> ${m.to ? "→ "+m.to : ""}: ${m.msg}
+      <div style="font-size:10px;opacity:0.6">${timeAgo(m.ts_ms)}</div>
+    `;
+
+    chat.appendChild(div);
   });
 
-  // Format relative time (uses epoch ms)
-  function timeAgo(epochMs){
-    const s = Math.floor((Date.now() - epochMs) / 1000);
-    if (s < 5) return "Just now";
-    if (s < 60) return `${s}s`;
-    const m = Math.floor(s / 60);
-    if (m < 60) return `${m}m`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h`;
-    const d = Math.floor(h / 24);
-    if (d < 7) return `${d}d`;
-    // fallback: full date
-    const dt = new Date(epochMs);
-    return dt.toLocaleDateString();
-  }
+  chat.scrollTop=chat.scrollHeight;
+}
 
-  // Format full local time for hover
-  function fullLocal(epochMs){
-    const dt = new Date(epochMs);
-    return dt.toLocaleString();
-  }
+// send
+async function send(){
+  const user = usernameEl.value.trim() || "Anonymous";
+  if(!msg.value.trim()) return;
 
-  async function loadChat(){
-    try {
-      const res = await fetch(`${API}/chat`);
-      if(!res.ok) return;
-      const msgs = await res.json();
+  await fetch(`${API}/chat?user=${encodeURIComponent(user)}&text=${encodeURIComponent(msg.value)}&room=${room.value}&to=${encodeURIComponent(toUser.value)}`, {
+    method:"POST"
+  });
 
-      chatBox.innerHTML = "";
-      msgs.forEach(item => {
-        const row = document.createElement('div');
-        const cls = (item.user === 'user1') ? 'left' : 'right';
-        row.className = `row ${cls}`;
+  msg.value="";
+  load();
+}
 
-        const avatar = document.createElement('div');
-        avatar.className = 'avatar';
-        avatar.textContent = AVATARS[item.user] || '🙂';
+// 🧹 clear room
+async function clearChat(){
+  if(!confirm("Clear THIS ROOM? 😭")) return;
 
-        const bubble = document.createElement('div');
-        bubble.className = `bubble ${item.user === 'user1' ? 'user1' : 'user2'}`;
+  await fetch(`${API}/chat?room=${room.value}`, {
+    method:"DELETE"
+  });
 
-        // message text (support both 'msg' and 'text' fields)
-        const text = (typeof item.msg !== 'undefined') ? item.msg : (item.text ?? '');
-        // timestamp in item.ts_ms if available, fallback to parse item.ts
-        const epoch = item.ts_ms ? Number(item.ts_ms) : (item.ts ? Date.parse(item.ts) : Date.now());
+  load();
+}
 
-        // main text
-        const content = document.createElement('div');
-        content.textContent = `${item.user}: ${text}`;
-
-        // timestamp element (small)
-        const tsEl = document.createElement('span');
-        tsEl.className = 'ts';
-        tsEl.textContent = timeAgo(epoch);
-        tsEl.title = fullLocal(epoch); // hover shows full time
-
-        bubble.appendChild(content);
-        bubble.appendChild(tsEl);
-
-        if(item.user === 'user1'){
-          row.appendChild(avatar);
-          row.appendChild(bubble);
-        } else {
-          row.appendChild(bubble);
-          row.appendChild(avatar);
-        }
-
-        chatBox.appendChild(row);
-      });
-
-      // auto scroll to bottom
-      chatBox.scrollTop = chatBox.scrollHeight;
-    } catch(e){
-      // silent fail (server down)
-    }
-  }
-
-  async function sendMessage(){
-    const user = usernameEl.value;
-    const text = input.value.trim();
-    if(!text) return;
-
-    await fetch(`${API}/chat?user=${encodeURIComponent(user)}&text=${encodeURIComponent(text)}`, {
-      method: 'POST'
-    });
-
-    input.value = '';
-    loadChat();
-  }
-
-  sendBtn.addEventListener('click', sendMessage);
-  input.addEventListener('keydown', (e) => { if(e.key === 'Enter') sendMessage(); });
-
-  // start loop
-  loadChat();
-  setInterval(loadChat, 700);
-
-  // focus input
-  input.focus();
+// events
+setInterval(load,800);
+room.addEventListener("change", load);
+msg.addEventListener("keydown", e=>{
+  if(e.key==="Enter") send();
+});
 </script>
 
 </body>
