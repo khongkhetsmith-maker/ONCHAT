@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 
 app = FastAPI()
 
-# Allow browser connections
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,52 +17,66 @@ app.add_middleware(
 
 CHAT_FILE = "chat.json"
 
-# Load chat history (if present)
+# load chat
 if os.path.exists(CHAT_FILE):
     try:
         with open(CHAT_FILE, "r", encoding="utf-8") as f:
             chat_history = json.load(f)
-    except Exception:
-        # if file is corrupted, start fresh but keep a backup
-        try:
-            os.rename(CHAT_FILE, CHAT_FILE + ".broken")
-        except Exception:
-            pass
+    except:
         chat_history = []
 else:
     chat_history = []
 
 @app.get("/")
 def home():
-    return {"status": "online", "message": "Multiplayer server is running with timestamps!"}
+    return {"status": "online"}
 
+# 📥 get chat (room + DM)
 @app.get("/chat")
-def get_chat():
-    # return messages in order (oldest first)
-    return chat_history
+def get_chat(room: str = "general", user: str = ""):
+    result = []
+    for m in chat_history:
+        if m.get("to"):  # DM
+            if m["to"] == user or m["user"] == user:
+                result.append(m)
+        else:  # public
+            if m.get("room") == room:
+                result.append(m)
+    return result
 
-# POST /chat?user=...&text=...
+# 📤 send message
 @app.post("/chat")
-def send_message(user: str, text: str):
-    # timestamp in ISO format (UTC) and ms epoch
+def send_message(user: str, text: str, room: str = "general", to: str = ""):
     now = datetime.now(timezone.utc)
-    iso = now.isoformat()   # e.g. "2025-11-17T10:23:45.123456+00:00"
-    epoch_ms = int(now.timestamp() * 1000)
 
     new_msg = {
+        "room": room,
         "user": user,
+        "to": to,
         "msg": text,
-        "ts": iso,
-        "ts_ms": epoch_ms
+        "ts": now.isoformat(),
+        "ts_ms": int(now.timestamp() * 1000)
     }
 
     chat_history.append(new_msg)
 
-    # write to disk (UTF-8 to preserve emojis)
     with open(CHAT_FILE, "w", encoding="utf-8") as f:
         json.dump(chat_history, f, ensure_ascii=False, indent=2)
 
-    return {"ok": True, "saved": new_msg}
+    return {"ok": True}
+
+# 🧹 CLEAR CHAT (PER ROOM 🔥)
+@app.delete("/chat")
+def clear_chat(room: str = "general"):
+    global chat_history
+
+    chat_history = [m for m in chat_history if m.get("room") != room]
+
+    with open(CHAT_FILE, "w", encoding="utf-8") as f:
+        json.dump(chat_history, f, ensure_ascii=False, indent=2)
+
+    return {"ok": True}
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", reload=True)
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run("server:app", host="0.0.0.0", port=port)
